@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Enhanced Product Brief Intake Tool</title>
+  <!-- Fonts & Chart.js -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: 'Roboto', sans-serif; background-color: #f0f4f8; padding: 20px; }
+    .container { max-width: 1100px; margin: auto; }
+    .card {
+      background: white; padding: 20px; border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px;
+    }
+    fieldset { border: none; margin: 0; padding: 0; }
+    legend { cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+    label { display: block; margin-top: 6px; }
+    input, textarea, select {
+      width: 100%; padding: 8px; margin-top: 6px;
+      border-radius: 4px; border: 1px solid #ccc;
+    }
+    button { 
+      padding: 10px 15px; border: none; border-radius: 4px;
+      background-color: #2980b9; color: white; cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover { background-color: #21618c; }
+    .hidden { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s ease; }
+    .visible { max-height: 800px; opacity: 1; transition: all 0.4s ease; }
+    .risk-row, .resource-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .risk-row input, .risk-row select,
+    .resource-row input { width: auto; flex: 1; }
+    .checkbox-group, .radio-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+    .checkbox-group label, .radio-group label { display: inline-flex; align-items: center; gap: 4px; }
+    
+    /* Tooltip styles */
+    .tooltip-container {
+      position: relative;
+      display: inline-block;
+    }
+    .tooltip-icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      background-color: #2980b9;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 16px;
+      font-size: 12px;
+      margin-left: 5px;
+      cursor: help;
+    }
+    .tooltip-content {
+      visibility: hidden;
+      width: 200px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -100px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .tooltip-container:hover .tooltip-content {
+      visibility: visible;
+      opacity: 1;
+    }
+    .tooltip-content::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #555 transparent transparent transparent;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🚀 Enhanced Product Brief Intake</h1>
+  <form id="proposalForm">
+    <!-- Project Overview -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Project Overview 🔽</legend>
+        <div class="visible">
+          <label for="projectTitle">Project Title</label>
+          <input id="projectTitle" name="projectTitle" placeholder="Project Title" required>
+          
+          <label for="clientName">Client Name</label>
+          <input id="clientName" name="clientName" placeholder="Client Name" required>
+          
+          <label for="clientIntent">Client Intent</label>
+          <div class="tooltip-container">
+            <textarea id="clientIntent" name="clientIntent" placeholder="Client Intent" required></textarea>
+            <span class="tooltip-icon">?</span>
+            <span class="tooltip-content">Describe the client's motivation and what they hope to achieve with this project.</span>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Client & Sponsor Details -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Client & Sponsor Details 🔽</legend>
+        <div class="visible">
+          <label for="sponsorName">Sponsor Name</label>
+          <input id="sponsorName" name="sponsorName" placeholder="e.g., HDFC Bank Ltd." required>
+          
+          <label for="contactName">Client Contact Name</label>
+          <input id="contactName" name="contactName" placeholder="Contact Person Name" required>
+          
+          <label for="contactEmail">Client Contact Email</label>
+          <input type="email" id="contactEmail" name="contactEmail" placeholder="Contact Email" required>
+          
+          <label for="contactMobile">Client Contact Mobile</label>
+          <input type="tel" id="contactMobile" name="contactMobile" placeholder="Contact Mobile" required>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Complexity & Strategic Value -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Complexity & Strategic Value 🔽</legend>
+        <div class="visible">
+          <label for="complexity">Complexity</label>
+          <div class="tooltip-container">
+            <select id="complexity" name="complexity">
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+            </select>
+            <span class="tooltip-icon">?</span>
+            <span class="tooltip-content">Low: Simple implementation. Medium: Some technical challenges. High: Significant complexity or innovation required.</span>
+          </div>
+          
+          <label for="strategicValue">Strategic Value</label>
+          <div class="tooltip-container">
+            <select id="strategicValue" name="strategicValue">
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+            </select>
+            <span class="tooltip-icon">?</span>
+            <span class="tooltip-content">Low: Limited business impact. Medium: Moderate potential return or strategic importance. High: Critical to business goals or strategy.</span>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Effort & Discrete Resources -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Effort & Resources 🔽</legend>
+        <div class="visible">
+          <label for="effort">Estimated Effort (hours)</label>
+          <input type="number" id="effort" name="effort" placeholder="Estimated Effort (hours)" required min="0">
+          
+          <div id="resourceContainer">
+            <!-- Discrete resource entries will be appended here -->
+          </div>
+          <button type="button" onclick="addResourceRow()">Add Resource Requirement</button>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Timeline & Milestones -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Timeline & Milestones 🔽</legend>
+        <div class="visible">
+          <label for="startDate">Start Date</label>
+          <input type="date" id="startDate" name="startDate" required>
+          
+          <label for="endDate">End Date</label>
+          <input type="date" id="endDate" name="endDate" required>
+          
+          <label for="milestones">Key Milestones</label>
+          <textarea id="milestones" name="milestones" placeholder="Key Milestones"></textarea>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Budget & ROI -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Budget & ROI 🔽</legend>
+        <div class="visible">
+          <label for="budget">Estimated Budget (INR)</label>
+          <input type="number" id="budget" name="budget" placeholder="Estimated Budget (INR)" required min="0">
+          
+          <label for="roi">Projected ROI (%)</label>
+          <input type="number" id="roi" name="roi" placeholder="Projected ROI (%)" required min="0">
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Detailed Risk Assessment -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Detailed Risk Assessment 🔽</legend>
+        <div class="visible">
+          <div id="riskContainer"></div>
+          <button type="button" onclick="addRiskRow()">Add Risk</button>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Technical & Integration Details -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Technical & Integration Details 🔽</legend>
+        <div class="visible">
+          <label for="deploymentPlatform">Deployment Platform / Cloud Provider</label>
+          <select id="deploymentPlatform" name="deploymentPlatform">
+            <option value="GCP">GCP</option>
+            <option value="AWS">AWS</option>
+            <option value="Azure">Azure</option>
+            <option value="State Data Center">State Data Center</option>
+            <option value="Other">Other</option>
+          </select>
+          
+          <label>Integration Requirements</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="integrationRequirements" value="Email Gateway"> Email Gateway</label>
+            <label><input type="checkbox" name="integrationRequirements" value="SMS Gateway"> SMS Gateway</label>
+            <label><input type="checkbox" name="integrationRequirements" value="Payment Gateway"> Payment Gateway</label>
+            <label><input type="checkbox" name="integrationRequirements" value="Digital Signature"> Digital Signature</label>
+          </div>
+          
+          <label>Authentication Requirements</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="authRequirements" value="Single Sign-On"> Single Sign-On</label>
+            <label><input type="checkbox" name="authRequirements" value="Multi-Factor Authentication"> Multi-Factor Authentication</label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Audit & Compliance -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Audit & Compliance 🔽</legend>
+        <div class="visible">
+          <label for="securityAudit">Security Audit Required?</label>
+          <select id="securityAudit" name="securityAudit">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+          
+          <label>Audit Types Required</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="auditTypes" value="VAPT"> VAPT</label>
+            <label><input type="checkbox" name="auditTypes" value="Source Code Review"> Source Code Review</label>
+            <label><input type="checkbox" name="auditTypes" value="CSST"> CSST</label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Service & Maintenance -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Service & Maintenance 🔽</legend>
+        <div class="visible">
+          <label for="amcRequired">Annual Maintenance Contract (AMC) Required?</label>
+          <select id="amcRequired" name="amcRequired">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+          
+          <label for="amcStart">AMC Start Date</label>
+          <input type="date" id="amcStart" name="amcStart">
+          
+          <label for="amcDuration">AMC Duration (months)</label>
+          <input type="number" id="amcDuration" name="amcDuration" min="0">
+          
+          <label for="trainingRequired">Training Requirements?</label>
+          <select id="trainingRequired" name="trainingRequired">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Change Request Management -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Change Request Management 🔽</legend>
+        <div class="visible">
+          <label for="changeRequestHandling">Change Request Handling</label>
+          <select id="changeRequestHandling" name="changeRequestHandling">
+            <option value="Standard">Standard</option>
+            <option value="Custom">Custom</option>
+            <option value="None">None</option>
+          </select>
+          
+          <label for="changeProcess">Change Request Process Details</label>
+          <textarea id="changeProcess" name="changeProcess" placeholder="Describe the process for evaluating change requests"></textarea>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Payment Terms & Commercials -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Payment Terms & Commercials 🔽</legend>
+        <div class="visible">
+          <label for="totalBudget">Total Project Budget (INR)</label>
+          <input type="number" id="totalBudget" name="totalBudget" placeholder="Total Project Budget" required min="0">
+          
+          <label for="paymentMilestones">Payment Milestones & Terms</label>
+          <textarea id="paymentMilestones" name="paymentMilestones" placeholder="e.g., 50% Advance, 30% on UAT, 20% on Go-Live"></textarea>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- User Roles & Performance -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">User Roles & Performance 🔽</legend>
+        <div class="visible">
+          <label>User Types</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="userTypes" value="Super Admin"> Super Admin</label>
+            <label><input type="checkbox" name="userTypes" value="Department Admin"> Department Admin</label>
+            <label><input type="checkbox" name="userTypes" value="Maker"> Maker</label>
+            <label><input type="checkbox" name="userTypes" value="Checker"> Checker</label>
+            <label><input type="checkbox" name="userTypes" value="End-user"> End-user</label>
+          </div>
+          
+          <label for="availabilityReq">Availability Requirements</label>
+          <input type="text" id="availabilityReq" name="availabilityReq" placeholder="e.g., 99.99%">
+          
+          <label for="performanceExpect">Performance Expectations</label>
+          <input type="text" id="performanceExpect" name="performanceExpect" placeholder="e.g., Page load < 2 seconds">
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Privacy & Security -->
+    <div class="card">
+      <fieldset>
+        <legend onclick="toggleSection(this)">Privacy & Security 🔽</legend>
+        <div class="visible">
+          <label for="encryptionStandards">Data Encryption & Security Standards</label>
+          <textarea id="encryptionStandards" name="encryptionStandards" placeholder="Describe encryption and security protocols"></textarea>
+          
+          <label for="privacyRequirements">Privacy & Data Handling Requirements</label>
+          <textarea id="privacyRequirements" name="privacyRequirements" placeholder="Detail privacy requirements and data handling"></textarea>
+        </div>
+      </fieldset>
+    </div>
+  </form>
+
+  <button onclick="generateOutput()">Generate Enhanced Proposal</button>
+
+  <!-- Adding Save/Load buttons -->
+  <div class="card">
+    <fieldset>
+      <legend>Save/Load Form Data</legend>
+      <div class="visible">
+        <div style="display: flex; gap: 10px;">
+          <input id="saveDataName" placeholder="Enter a name for this proposal" style="flex: 2;">
+          <button onclick="saveFormData()" style="flex: 1;">Save Current Form</button>
+        </div>
+        <div style="margin-top: 10px; display: flex; gap: 10px;">
+          <select id="loadDataSelect" style="flex: 2;"></select>
+          <button onclick="loadFormData()" style="flex: 1;">Load Selected Form</button>
+          <button onclick="deleteFormData()" style="flex: 1;">Delete Selected</button>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+
+  <!-- Output Section -->
+  <div class="card" id="output"></div>
+  
+  <!-- Existing Visualizations -->
+  <canvas id="overviewChart" class="card"></canvas>
+  <canvas id="financialChart" class="card"></canvas>
+  <canvas id="riskChart" class="card"></canvas>
+</div>
+
+<script>
+  // Chart instances for management
+  let overviewChartInstance, financialChartInstance, riskChartInstance;
+
+  // Load saved forms on page load
+  window.onload = function() {
+    updateSavedFormsList();
+  }
+
+  // Update the dropdown with all saved forms
+  function updateSavedFormsList() {
+    const selectElement = document.getElementById('loadDataSelect');
+    selectElement.innerHTML = '';
+    
+    // Get all keys from localStorage that start with 'proposal_'
+    const savedForms = Object.keys(localStorage)
+      .filter(key => key.startsWith('proposal_'))
+      .map(key => ({
+        name: key.replace('proposal_', ''),
+        key
+      }));
+    
+    if (savedForms.length === 0) {
+      const option = document.createElement('option');
+      option.text = 'No saved forms found';
+      option.disabled = true;
+      selectElement.appendChild(option);
+    } else {
+      savedForms.forEach(form => {
+        const option = document.createElement('option');
+        option.value = form.key;
+        option.text = form.name;
+        selectElement.appendChild(option);
+      });
+    }
+  }
+
+  // Save current form data to localStorage
+  function saveFormData() {
+    const saveName = document.getElementById('saveDataName').value.trim();
+    if (!saveName) {
+      alert('Please enter a name for saving this proposal');
+      return;
+    }
+    
+    // Collect all form field values
+    const formData = {};
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+      if (input.type === 'checkbox') {
+        formData[input.name + '_' + input.value] = input.checked;
+      } else if (input.id && input.id !== 'loadDataSelect' && input.id !== 'saveDataName') {
+        formData[input.id] = input.value;
+      }
+    });
+    
+    // Save risk rows
+    formData.riskRows = [];
+    document.querySelectorAll("#riskContainer .risk-row").forEach(row => {
+      formData.riskRows.push({
+        description: row.querySelector(".risk-description").value,
+        impact: row.querySelector(".risk-impact").value,
+        likelihood: row.querySelector(".risk-likelihood").value
+      });
+    });
+    
+    // Save resource rows
+    formData.resourceRows = [];
+    document.querySelectorAll("#resourceContainer .resource-row").forEach(row => {
+      formData.resourceRows.push({
+        name: row.querySelector(".resource-name").value,
+        details: row.querySelector(".resource-details").value
+      });
+    });
+    
+    // Save to localStorage
+    localStorage.setItem('proposal_' + saveName, JSON.stringify(formData));
+    alert('Form data saved successfully');
+    
+    // Update the dropdown list
+    updateSavedFormsList();
+    document.getElementById('saveDataName').value = '';
+  }
+
+  // Load saved form data
+  function loadFormData() {
+    const selectElement = document.getElementById('loadDataSelect');
+    const selectedKey = selectElement.value;
+    
+    if (!selectedKey || selectedKey === 'No saved forms found') {
+      alert('Please select a saved form to load');
+      return;
+    }
+    
+    try {
+      const formData = JSON.parse(localStorage.getItem(selectedKey));
+      if (!formData) {
+        alert('No data found for the selected form');
+        return;
+      }
+      
+      // Clear current form
+      document.getElementById('proposalForm').reset();
+      document.getElementById('riskContainer').innerHTML = '';
+      document.getElementById('resourceContainer').innerHTML = '';
+      
+      // Populate form fields
+      Object.keys(formData).forEach(key => {
+        if (key === 'riskRows') {
+          formData.riskRows.forEach(risk => {
+            addRiskRow();
+            const rows = document.querySelectorAll("#riskContainer .risk-row");
+            const row = rows[rows.length - 1];
+            row.querySelector(".risk-description").value = risk.description;
+            row.querySelector(".risk-impact").value = risk.impact;
+            row.querySelector(".risk-likelihood").value = risk.likelihood;
+          });
+        } else if (key === 'resourceRows') {
+          formData.resourceRows.forEach(resource => {
+            addResourceRow();
+            const rows = document.querySelectorAll("#resourceContainer .resource-row");
+            const row = rows[rows.length - 1];
+            row.querySelector(".resource-name").value = resource.name;
+            row.querySelector(".resource-details").value = resource.details;
+          });
+        } else if (key.includes('_')) {
+          // Handle checkboxes
+          const [name, value] = key.split('_');
+          const checkbox = document.querySelector(`input[name="${name}"][value="${value}"]`);
+          if (checkbox) {
+            checkbox.checked = formData[key];
+          }
+        } else {
+          // Handle regular inputs, selects, and textareas
+          const element = document.getElementById(key);
+          if (element) {
+            element.value = formData[key];
+          }
+        }
+      });
+      
+      alert('Form data loaded successfully');
+    } catch (error) {
+      alert('Error loading form data: ' + error.message);
+      console.error(error);
+    }
+  }
+
+  // Delete saved form data
+  function deleteFormData() {
+    const selectElement = document.getElementById('loadDataSelect');
+    const selectedKey = selectElement.value;
+    
+    if (!selectedKey || selectedKey === 'No saved forms found') {
+      alert('Please select a saved form to delete');
+      return;
+    }
+    
+    if (confirm('Are you sure you want to delete this saved form?')) {
+      localStorage.removeItem(selectedKey);
+      alert('Form data deleted successfully');
+      updateSavedFormsList();
+    }
+  }
+
+  // Toggle sections for better UX
+  function toggleSection(el) {
+    const section = el.nextElementSibling;
+    section.classList.toggle('hidden');
+    section.classList.toggle('visible');
+  }
+
+  // Add a new risk row
+  function addRiskRow() {
+    const container = document.getElementById("riskContainer");
+    const row = document.createElement("div");
+    row.className = "risk-row";
+    row.innerHTML = `
+      <input type="text" placeholder="Risk Description" class="risk-description" required>
+      <select class="risk-impact">
+        <option>Low</option>
+        <option>Medium</option>
+        <option>High</option>
+      </select>
+      <select class="risk-likelihood">
+        <option>Low</option>
+        <option>Medium</option>
+        <option>High</option>
+      </select>
+      <button type="button" onclick="removeRow(this)">Remove</button>
+    `;
+    container.appendChild(row);
+  }
+
+  // Add a new resource row (discrete resource requirements)
+  function addResourceRow() {
+    const container = document.getElementById("resourceContainer");
+    const row = document.createElement("div");
+    row.className = "resource-row";
+    row.innerHTML = `
+      <input type="text" placeholder="Resource Name" class="resource-name" required>
+      <input type="text" placeholder="Details/Quantity" class="resource-details" required>
+      <button type="button" onclick="removeRow(this)">Remove</button>
+    `;
+    container.appendChild(row);
+  }
+
+  // Generic function to remove a row (used for risk and resource rows)
+  function removeRow(btn) {
+    const row = btn.parentNode;
+    row.parentNode.removeChild(row);
+  }
+
+  // Generate output and visualizations
+  function generateOutput() {
+    // Retrieve key DOM elements
+    const projectTitle = document.getElementById("projectTitle").value;
+    const clientName = document.getElementById("clientName").value;
+    const clientIntent = document.getElementById("clientIntent").value;
+    const sponsorName = document.getElementById("sponsorName").value;
+    const contactName = document.getElementById("contactName").value;
+    const contactEmail = document.getElementById("contactEmail").value;
+    const contactMobile = document.getElementById("contactMobile").value;
+    const complexity = document.getElementById("complexity").value;
+    const strategicValue = document.getElementById("strategicValue").value;
+    const effort = document.getElementById("effort").value;
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+    const milestones = document.getElementById("milestones").value;
+    const budget = document.getElementById("budget").value;
+    const roi = document.getElementById("roi").value;
+    
+    // Get additional values used in both validation and output
+    const amcRequired = document.getElementById("amcRequired").value;
+    const amcStart = document.getElementById("amcStart").value;
+    const amcDuration = document.getElementById("amcDuration").value;
+    const trainingRequired = document.getElementById("trainingRequired").value;
+    
+    // Advanced validation
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (contactEmail && !emailRegex.test(contactEmail)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+    
+    // Date range validation
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (start > end) {
+        alert('End date must be after start date.');
+        return;
+      }
+    }
+    
+    // AMC date validation
+    if (amcStart && endDate) {
+      const amc = new Date(amcStart);
+      const end = new Date(endDate);
+      if (amc < end) {
+        alert('AMC start date should be after project end date.');
+        return;
+      }
+    }
+    
+    // Gather risk summary text
+    let risksOutput = "";
+    document.querySelectorAll("#riskContainer .risk-row").forEach((row, index) => {
+      const desc = row.querySelector(".risk-description").value || "N/A";
+      const impact = row.querySelector(".risk-impact").value;
+      const likelihood = row.querySelector(".risk-likelihood").value;
+      risksOutput += `Risk ${index + 1}: ${desc}, Impact: ${impact}, Likelihood: ${likelihood}\n`;
+    });
+
+    // Gather discrete resource requirements summary
+    let resourcesOutput = "";
+    document.querySelectorAll("#resourceContainer .resource-row").forEach((row, index) => {
+      const name = row.querySelector(".resource-name").value || "N/A";
+      const details = row.querySelector(".resource-details").value || "";
+      resourcesOutput += `Resource ${index + 1}: ${name} (${details})\n`;
+    });
+
+    // Technical & Integration details
+    const deploymentPlatform = document.getElementById("deploymentPlatform").value;
+    let integrationRequirements = [];
+    document.querySelectorAll("input[name='integrationRequirements']:checked").forEach(el => integrationRequirements.push(el.value));
+    let authRequirements = [];
+    document.querySelectorAll("input[name='authRequirements']:checked").forEach(el => authRequirements.push(el.value));
+
+    // Audit & Compliance
+    const securityAudit = document.getElementById("securityAudit").value;
+    let auditTypes = [];
+    document.querySelectorAll("input[name='auditTypes']:checked").forEach(el => auditTypes.push(el.value));
+
+    // Service & Maintenance
+    const changeRequestHandling = document.getElementById("changeRequestHandling").value;
+    const changeProcess = document.getElementById("changeProcess").value;
+
+    // Payment Terms & Commercials
+    const totalBudget = document.getElementById("totalBudget").value;
+    const paymentMilestones = document.getElementById("paymentMilestones").value;
+
+    // User Roles & Performance
+    let userTypes = [];
+    document.querySelectorAll("input[name='userTypes']:checked").forEach(el => userTypes.push(el.value));
+    const availabilityReq = document.getElementById("availabilityReq").value;
+    const performanceExpect = document.getElementById("performanceExpect").value;
+
+    // Privacy & Security
+    const encryptionStandards = document.getElementById("encryptionStandards").value;
+    const privacyRequirements = document.getElementById("privacyRequirements").value;
+
+    // Basic validation for required fields (example for a few fields)
+    if (!projectTitle || !clientName || !clientIntent || !effort || !startDate || !endDate || !budget || !roi || !sponsorName) {
+      alert('Please complete all required fields.');
+      return;
+    }
+    if (parseFloat(effort) < 0 || parseFloat(budget) < 0 || parseFloat(roi) < 0 || parseFloat(totalBudget) < 0) {
+      alert('Numeric values must be positive.');
+      return;
+    }
+
+    // Build the complete proposal summary
+    const output = document.getElementById("output");
+    output.innerHTML = `
+      <h2>Enhanced Proposal Summary</h2>
+      <pre>
+-- Project Overview --
+Project Title: ${projectTitle}
+Client: ${clientName}
+Client Intent: ${clientIntent}
+
+-- Client & Sponsor Details --
+Sponsor Name: ${sponsorName}
+Contact Name: ${contactName}
+Contact Email: ${contactEmail}
+Contact Mobile: ${contactMobile}
+
+-- Complexity & Strategic Value --
+Complexity: ${complexity}
+Strategic Value: ${strategicValue}
+
+-- Effort & Resources --
+Effort: ${effort} hours
+Resource Requirements:
+${resourcesOutput}
+
+-- Timeline & Milestones --
+Start Date: ${startDate}
+End Date: ${endDate}
+Milestones:
+${milestones}
+
+-- Budget & ROI --
+Budget (INR): ${budget}
+Projected ROI (%): ${roi}
+
+-- Detailed Risks --
+${risksOutput}
+
+-- Technical & Integration Details --
+Deployment Platform: ${deploymentPlatform}
+Integration Requirements: ${integrationRequirements.join(", ")}
+Authentication Requirements: ${authRequirements.join(", ")}
+
+-- Audit & Compliance --
+Security Audit Required: ${securityAudit}
+Audit Types: ${auditTypes.join(", ")}
+
+-- Service & Maintenance --
+AMC Required: ${amcRequired}
+AMC Duration (months): ${amcDuration}
+Training Required: ${trainingRequired}
+
+-- Change Request Management --
+Change Request Handling: ${changeRequestHandling}
+Change Request Process: ${changeProcess}
+
+-- Payment Terms & Commercials --
+Total Project Budget (INR): ${totalBudget}
+Payment Milestones & Terms: ${paymentMilestones}
+
+-- User Roles & Performance --
+User Types: ${userTypes.join(", ")}
+Availability Requirements: ${availabilityReq}
+Performance Expectations: ${performanceExpect}
+
+-- Privacy & Security --
+Encryption & Security Standards: ${encryptionStandards}
+Privacy & Data Handling: ${privacyRequirements}
+      </pre>
+    `;
+
+    visualizeData();
+  }
+
+  // Create or update charts with new data (existing charts remain unchanged)
+  function visualizeData() {
+    // Destroy previous charts if they exist
+    if (overviewChartInstance) overviewChartInstance.destroy();
+    if (financialChartInstance) financialChartInstance.destroy();
+    if (riskChartInstance) riskChartInstance.destroy();
+
+    const complexity = document.getElementById("complexity").value;
+    const strategicValue = document.getElementById("strategicValue").value;
+    const effort = parseFloat(document.getElementById("effort").value);
+    const budget = parseFloat(document.getElementById("budget").value);
+    const roi = parseFloat(document.getElementById("roi").value);
+    const complexityMap = { "Low": 1, "Medium": 2, "High": 3 };
+    const strategicValueMap = { "Low": 1, "Medium": 2, "High": 3 };
+
+    // 1) Overview Chart: Complexity, Strategic Value, and Effort
+    overviewChartInstance = new Chart(document.getElementById('overviewChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Complexity', 'Strategic Value', 'Effort'],
+        datasets: [{
+          label: 'Project Overview',
+          data: [
+            complexityMap[complexity],
+            strategicValueMap[strategicValue],
+            effort
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: 'Project Overview Metrics' }
+        }
+      }
+    });
+
+    // 2) Financial Chart: Budget vs. ROI
+    financialChartInstance = new Chart(document.getElementById('financialChart'), {
+      data: {
+        labels: ['Project'],
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Budget (INR)',
+            data: [budget],
+            yAxisID: 'y'
+          },
+          {
+            type: 'line',
+            label: 'Projected ROI (%)',
+            data: [roi],
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            type: 'linear',
+            position: 'left',
+            title: { display: true, text: 'Budget (INR)' }
+          },
+          y1: {
+            type: 'linear',
+            position: 'right',
+            title: { display: true, text: 'ROI (%)' },
+            grid: { drawOnChartArea: false }
+          }
+        },
+        plugins: {
+          title: { display: true, text: 'Financial Overview' }
+        }
+      }
+    });
+
+    // 3) Risk Chart: Scatter plot (Impact vs. Likelihood)
+    const riskData = [];
+    document.querySelectorAll("#riskContainer .risk-row").forEach((row) => {
+      const desc = row.querySelector(".risk-description").value || "N/A";
+      const impact = row.querySelector(".risk-impact").value;
+      const likelihood = row.querySelector(".risk-likelihood").value;
+      const mapValue = (val) => val === "Low" ? 1 : val === "Medium" ? 2 : 3;
+      riskData.push({
+        x: mapValue(impact),
+        y: mapValue(likelihood),
+        riskLabel: desc
+      });
+    });
+    
+    riskChartInstance = new Chart(document.getElementById('riskChart'), {
+      type: 'scatter',
+      data: {
+        datasets: [{
+          label: 'Risks',
+          data: riskData,
+          pointRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            type: 'linear',
+            min: 0.5,
+            max: 3.5,
+            ticks: { stepSize: 1 },
+            title: { display: true, text: 'Impact (1=Low, 2=Medium, 3=High)' }
+          },
+          y: {
+            type: 'linear',
+            min: 0.5,
+            max: 3.5,
+            ticks: { stepSize: 1 },
+            title: { display: true, text: 'Likelihood (1=Low, 2=Medium, 3=High)' }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `Risk: ${context.raw.riskLabel}\nImpact: ${context.raw.x}, Likelihood: ${context.raw.y}`;
+              }
+            }
+          },
+          title: { display: true, text: 'Risk Matrix (Impact vs. Likelihood)' }
+        }
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
